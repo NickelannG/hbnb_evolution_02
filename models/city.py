@@ -4,6 +4,7 @@
 from datetime import datetime
 import uuid
 import re
+from flask import jsonify, request, abort
 from sqlalchemy import Column, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from data import storage, USE_DB_STORAGE, Base
@@ -77,7 +78,244 @@ class City(Base):
 
     # --- Static methods ---
     # TODO:
+
     # def all()
+    @staticmethod
+    def all():
+        """ Class method that returns all city data"""
+        data = []
+
+        try:
+            city_data = storage.get('City')
+        except IndexError as exc:
+            print("Error: ", exc)
+            return "Unable to load cities!"
+
+        if USE_DB_STORAGE:
+            # DBStorage
+            for row in city_data:
+                # use print(row.__dict__) to see the contents of the sqlalchemy model objects
+                data.append({
+                    "id": row.id,
+                    "name": row.name,
+                    "country_id": row.country_id,
+                    "created_at": row.created_at.strftime(City.datetime_format),
+                    "updated_at": row.updated_at.strftime(City.datetime_format)
+                })
+        else:
+            # FileStorage
+            for k, v in city_data.items():
+                data.append({
+                    "id": v['id'],
+                    "name": v['name'],
+                    "country_id": v['country_id'],
+                    "created_at": datetime.fromtimestamp(v['created_at']),
+                    "updated_at": datetime.fromtimestamp(v['updated_at'])
+                })
+
+        return jsonify(data)
+    
     # def specific()
+    @staticmethod
+    def specific(city_id):
+        """ Class method that returns a specific city data"""
+        data = []
+
+        try:
+            city_data = storage.get('City', city_id)
+        except IndexError as exc:
+            print("Error: ", exc)
+            return "City not found!"
+
+        if USE_DB_STORAGE:
+            # DBStorage
+            data.append({
+                "id": city_data.id,
+                "name": city_data.name,
+                "country_id": city_data.country_id,
+                "created_at": city_data.created_at.strftime(City.datetime_format),
+                "updated_at": city_data.updated_at.strftime(City.datetime_format)
+            })
+        else:
+            # FileStorage
+            data.append({
+            "id": city_data['id'],
+            "name": city_data['name'],
+            "country_id": city_data['country_id'],
+            "created_at": datetime.fromtimestamp(city_data['created_at']),
+            "updated_at": datetime.fromtimestamp(city_data['updated_at'])
+            })
+        return jsonify(data)
+
     # def create()
+    @staticmethod
+    def create():
+        """ Class method that creates a new city"""
+        if request.get_json() is None:
+            abort(400, "Not a JSON")
+
+        data = request.get_json()
+        if 'name' not in data:
+            abort(400, "Missing name")
+        # need to check country id as well
+        if 'country_id' not in data:
+            abort(400, "Missing country_id") 
+
+        try:
+            new_city = City(
+                name=data["name"],
+                country_id=data["country_id"]
+            )
+        except ValueError as exc:
+            return repr(exc) + "\n"
+
+        # TO DO - extra check if city doesnt already exist
+
+        output = {
+            "id": new_city.id,
+            "name": new_city.name,
+            "country_id": new_city.country_id,
+            "created_at": new_city.created_at,
+            "updated_at": new_city.updated_at
+        }
+
+        try:
+            if USE_DB_STORAGE:
+                # DBStorage - note that the add method uses the City object instance 'new_city'
+                storage.add('City', new_city)
+                # datetime -> readable text
+                output['created_at'] = new_city.created_at.strftime(City.datetime_format)
+                output['updated_at'] = new_city.updated_at.strftime(City.datetime_format)
+            else:
+                # FileStorage - note that the add method uses the dictionary 'output'
+                storage.add('City', output)
+                # timestamp -> readable text
+                output['created_at'] = datetime.fromtimestamp(new_city.created_at)
+                output['updated_at'] = datetime.fromtimestamp(new_city.updated_at)
+        except IndexError as exc:
+            print("Error: ", exc)
+            return "Unable to add new City!"
+
+        return jsonify(output)
+    
     # def update()
+    @staticmethod
+    def update(city_id):
+        """ Class method that updates an existing city"""
+        if request.get_json() is None:
+            abort(400, "Not a JSON")
+
+        data = request.get_json()
+
+        try:
+            # update the city record. Only name can be changed
+            result = storage.update('City', city_id, data, ["name"])
+        except IndexError as exc:
+            print("Error: ", exc)
+            return "Unable to update specified city!"
+
+        if USE_DB_STORAGE:
+            output = {
+                "id": result.id,
+                "name": result.name,
+                "country_id": result.country_id,
+                "created_at": result.created_at.strftime(City.datetime_format),
+                "updated_at": result.updated_at.strftime(City.datetime_format)
+            }
+        else:
+            output = {
+                "id": result["id"],
+                "name": result["name"],
+                "country_id": result["coutnry_id"],
+                "created_at": datetime.fromtimestamp(result["created_at"]),
+                "updated_at": datetime.fromtimestamp(result["updated_at"])
+            }
+
+        # print out the updated city details
+        return jsonify(output)
+    
+    @staticmethod
+    def cities_specific_country_get(city_id):
+        """ Class method that returns a specific country's data based on city ID """
+        data = []
+
+        try:
+            city_data = storage.get('City', city_id)
+        except IndexError as exc:
+            print("Error: ", exc)
+            return "City not found!"
+
+        country_id = city_data.country_id if USE_DB_STORAGE else city_data['country_id']
+
+        try:
+            country_data = storage.get('Country', country_id)
+        except IndexError as exc:
+            print("Error: ", exc)
+            return "Country not found!"
+
+        if USE_DB_STORAGE:
+            # DBStorage
+            data.append({
+                "id": country_data.id,
+                "name": country_data.name,
+                "code": country_data.code,
+                "created_at": country_data.created_at.strftime(Country.datetime_format),
+                "updated_at": country_data.updated_at.strftime(Country.datetime_format)
+            })
+        else:
+            # FileStorage
+            data.append({
+                "id": country_data['id'],
+                "name": country_data['name'],
+                "code": country_data['code'],
+                "created_at": datetime.fromtimestamp(country_data['created_at']).strftime(Country.datetime_format),
+                "updated_at": datetime.fromtimestamp(country_data['updated_at']).strftime(Country.datetime_format)
+            })
+
+        return jsonify(data)
+
+
+# Kept just incase
+
+    # @staticmethod
+    # def cities_specific_country_get(city_id):
+    #     """ Class method that returns a specific city's country"""
+    #     data = []
+    #     wanted_country_id = ""
+# 
+    #     country_data = storage.get("Country")
+    #     city_data = storage.get("City")
+# 
+    #     if USE_DB_STORAGE:
+    #         # Once again, we have unoptimised code for DB Storage.
+    #         # Surely there is a better way to do this? Maybe using relationships?
+# 
+    #         for row in country_data:
+    #             if row.code == country_code:
+    #                 wanted_country_id = row.id
+# 
+    #         for v in city_data:
+    #             if v.country_id == wanted_country_id:
+    #                 data.append({
+    #                     "id": v.id,
+    #                     "name": v.name,
+    #                     "country_id": v.country_id,
+    #                     "created_at":v.created_at.strftime(Country.datetime_format),
+    #                     "updated_at":v.updated_at.strftime(Country.datetime_format)
+    #                 })
+    #     else:
+    #         for k, v in country_data.items():
+    #             if v['code'] == country_code:
+    #                 wanted_country_id = v['id']
+# 
+    #         for k, v in city_data.items():
+    #             if v['country_id'] == wanted_country_id:
+    #                 data.append({
+    #                     "id": v['id'],
+    #                     "name": v['name'],
+    #                     "country_id": v['country_id'],
+    #                     "created_at":datetime.fromtimestamp(v['created_at']),
+    #                     "updated_at":datetime.fromtimestamp(v['updated_at'])
+    #                 })
+# 
+    #     return jsonify(data)
