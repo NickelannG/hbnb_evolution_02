@@ -268,3 +268,94 @@ class Amenity(Base):
 
     # --- Static methods ---
     # TODO:
+    @staticmethod
+    def all():
+        """ Class method that returns all place data"""
+        data = []
+
+        try:
+            place_data = storage.get('Place')
+        except IndexError as exc:
+            print("Error: ", exc)
+            return "Unable to load places!"
+
+        if USE_DB_STORAGE:
+            # DBStorage
+            for row in place_data:
+                # use print(row.__dict__) to see the contents of the sqlalchemy model objects
+                data.append({
+                    "id": place_data.id,
+                    "host_user_id": place_data.host_user_id,
+                    "city_id": place_data.city_id,
+                    "name": place_data.name,
+                    "description": place_data.description,
+                    "address": place_data.address,
+                    "latitude": place_data.latitude,
+                    "longitude": place_data.longitude,
+                    "number_of_rooms": place_data.number_of_rooms,
+                    "bathrooms": place_data.bathrooms,
+                    "price_per_night": place_data.price_per_night,
+                    "created_at": row.created_at.strftime(Place.datetime_format),
+                    "updated_at": row.updated_at.strftime(Place.datetime_format)
+                })
+        else:
+            # FileStorage
+            for k, v in place_data.items():
+                data.append({
+                     "id": v['id'],
+                     "host_user_id": v['host_user_id'],
+                     "city_id": v['city_id'],
+                     "name": v['name'],
+                     "description": v['description'],
+                     "address": v['address'],
+                     "latitude": v['latitude'],
+                     "longitude": v['longitude'],
+                     "number_of_rooms": v['number_of_rooms'],
+                     "bathrooms": v['bathrooms'],
+                     "price_per_night": v['price_per_night'],
+                     "max_guests": v['max_guests'],
+                    "created_at": datetime.fromtimestamp(v['created_at']),
+                    "updated_at": datetime.fromtimestamp(v['updated_at'])
+                })
+
+        return jsonify(data)
+    
+    # def specific()
+    @staticmethod
+    def specific(place_id):
+        """ Class method that returns a specific place data"""
+        data = []
+
+        try:
+            place_data = storage.get('Place', place_id)
+        except IndexError as exc:
+            print("Error: ", exc)
+            return "Place not found!"
+
+        if USE_DB_STORAGE:
+            # DBStorage
+            data.append(
+                "id": place_data.id,
+                "host_user_id": place_data.host_user_id,
+                "city_id": place_data.city_id,
+                "name": place_data.name,
+                "description": place_data.description,
+                "address": place_data.address,
+                "latitude": place_data.latitude,
+                "longitude": place_data.longitude,
+                "number_of_rooms": place_data.number_of_rooms,
+                "bathrooms": place_data.bathrooms,
+                "price_per_night": place_data.price_per_night,
+                "created_at": place_data.created_at.strftime(Place.datetime_format),
+                "updated_at": place_data.updated_at.strftime(Place.datetime_format)
+            )
+        else:
+            # FileStorage
+            data.append({
+            "id": place_data['id'],
+            "name": place_data['name'],
+            "country_id": place_data['country_id'],
+            "created_at": datetime.fromtimestamp(place_data['created_at']),
+            "updated_at": datetime.fromtimestamp(place_data['updated_at'])
+            })
+        return jsonify(data)
