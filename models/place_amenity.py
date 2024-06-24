@@ -216,58 +216,6 @@ class Place(Base):
 
     # --- Static methods ---
     # TODO:
-
-
-class Amenity(Base):
-    """Representation of amenity """
-
-    datetime_format = "%Y-%m-%dT%H:%M:%S.%f"
-
-    # Class attrib defaults
-    id = None
-    created_at = None
-    updated_at = None
-    __name = ""
-
-    # Class attrib defaults
-    __tablename__ = 'amenities'
-    id = Column(String(60), nullable=False, primary_key=True)
-    created_at = Column(DateTime, nullable=False, default=datetime.now())
-    updated_at = Column(DateTime, nullable=False, default=datetime.now())
-    __name = Column("name", String(128), nullable=False)
-    places = relationship("Place", secondary=place_amenity, back_populates = 'amenities')
-
-    # constructor
-    def __init__(self, *args, **kwargs):
-        """ constructor """
-        # Set object instance defaults
-        self.id = str(uuid.uuid4())
-
-        # Note that setattr will call the setters for attribs in the list
-        if kwargs:
-            for key, value in kwargs.items():
-                if key in ["name"]:
-                    setattr(self, key, value)
-
-    # --- Getters and Setters ---
-    @property
-    def name(self):
-        """Getter for private prop name"""
-        return self.__name
-
-    @name.setter
-    def name(self, value):
-        """Setter for private prop name"""
-
-        # ensure that the value is not spaces-only and is alphabets + spaces only
-        is_valid_name = len(value.strip()) > 0 and re.search("^[a-zA-Z ]+$", value)
-        if is_valid_name:
-            self.__name = value
-        else:
-            raise ValueError("Invalid amenity name specified: {}".format(value))
-
-    # --- Static methods ---
-    # TODO:
     @staticmethod
     def all():
         """ Class method that returns all place data"""
@@ -334,7 +282,7 @@ class Amenity(Base):
 
         if USE_DB_STORAGE:
             # DBStorage
-            data.append(
+            data.append({
                 "id": place_data.id,
                 "host_user_id": place_data.host_user_id,
                 "city_id": place_data.city_id,
@@ -348,7 +296,7 @@ class Amenity(Base):
                 "price_per_night": place_data.price_per_night,
                 "created_at": place_data.created_at.strftime(Place.datetime_format),
                 "updated_at": place_data.updated_at.strftime(Place.datetime_format)
-            )
+            })
         else:
             # FileStorage
             data.append({
@@ -359,3 +307,193 @@ class Amenity(Base):
             "updated_at": datetime.fromtimestamp(place_data['updated_at'])
             })
         return jsonify(data)
+
+class Amenity(Base):
+    """Representation of amenity """
+
+    datetime_format = "%Y-%m-%dT%H:%M:%S.%f"
+
+    # Class attrib defaults
+    id = None
+    created_at = None
+    updated_at = None
+    __name = ""
+
+    # Class attrib defaults
+    __tablename__ = 'amenities'
+    id = Column(String(60), nullable=False, primary_key=True)
+    created_at = Column(DateTime, nullable=False, default=datetime.now())
+    updated_at = Column(DateTime, nullable=False, default=datetime.now())
+    __name = Column("name", String(128), nullable=False)
+    places = relationship("Place", secondary=place_amenity, back_populates = 'amenities')
+
+    # constructor
+    def __init__(self, *args, **kwargs):
+        """ constructor """
+        # Set object instance defaults
+        self.id = str(uuid.uuid4())
+
+        # Note that setattr will call the setters for attribs in the list
+        if kwargs:
+            for key, value in kwargs.items():
+                if key in ["name"]:
+                    setattr(self, key, value)
+
+    # --- Getters and Setters ---
+    @property
+    def name(self):
+        """Getter for private prop name"""
+        return self.__name
+
+    @name.setter
+    def name(self, value):
+        """Setter for private prop name"""
+
+        # ensure that the value is not spaces-only and is alphabets + spaces only
+        is_valid_name = len(value.strip()) > 0 and re.search("^[a-zA-Z ]+$", value)
+        if is_valid_name:
+            self.__name = value
+        else:
+            raise ValueError("Invalid amenity name specified: {}".format(value))
+
+    # --- Static methods ---
+    # TODO:
+    @staticmethod
+    def all():
+        """ Class method that returns all amenities data"""
+        data = []
+
+        try:
+            amenity_data = storage.get('Amenity')
+        except IndexError as exc:
+            print("Error: ", exc)
+            return "Unable to load amenity!"
+
+        if USE_DB_STORAGE:
+            # DBStorage
+            for row in amenity_data:
+                # use print(row.__dict__) to see the contents of the sqlalchemy model objects
+                data.append({
+                    "id": row.id,
+                    "name": row.name,
+                    "created_at": row.created_at.strftime(Amenity.datetime_format),
+                    "updated_at": row.updated_at.strftime(Amenity.datetime_format)
+                })
+        else:
+            # FileStorage
+            for k, v in amenity_data.items():
+                data.append({
+                    "id": v['id'],
+                    "name": v['name'],
+                    "created_at": datetime.fromtimestamp(v['created_at']),
+                    "updated_at": datetime.fromtimestamp(v['updated_at'])
+        })
+
+        return jsonify(data)
+
+    @staticmethod
+    def specific(amenity_id):
+        """ Class method that returns a specific amenities data"""
+        data = []
+
+        try:
+            amenity_data = storage.get('Amenity', amenity_id)
+        except IndexError as exc:
+            print("Error: ", exc)
+            return "Amenity not found!"
+
+        if USE_DB_STORAGE:
+            # DBStoragamenity
+            data.append({
+                "id": amenity_data.id,
+                "name": amenity_data.name,
+                "created_at": amenity_data.created_at.strftime(Amenity.datetime_format),
+                "updated_at": amenity_data.updated_at.strftime(Amenity.datetime_format)
+            })
+        else:
+            # FileStorage
+            data.append({
+                "id": amenity_data['id'],
+                "name": amenity_data['name'],
+                "created_at": datetime.fromtimestamp(amenity_data['created_at']),
+                "updated_at": datetime.fromtimestamp(amenity_data['updated_at'])
+            })
+
+        return jsonify(data)
+
+    @staticmethod
+    def create():
+        """ Class method that creates a new amenity """
+        if request.get_json() is None:
+            abort(400, "Not a JSON")
+
+        data = request.get_json()
+        if 'name' not in data:
+            abort(400, "Missing name")
+
+        try:
+            new_amenity = Amenity(name=data["name"])
+        except ValueError as exc:
+            return repr(exc) + "\n"
+
+        # TODO: add a check here to ensure that the provided amenity is not already used by someone else in the DB
+        # If you see this message, tell me and I will (maybe) give you a cookie lol
+
+        output = {
+            "id": new_amenity.id,
+            "name": new_amenity.name,
+            "created_at": new_amenity.created_at,
+            "updated_at": new_amenity.updated_at
+        }
+
+        try:
+            if USE_DB_STORAGE:
+                # DBStorage - note that the add method uses the Amenity object instance 'new_amenity'
+                storage.add('Amenity', new_amenity)
+                # datetime -> readable text
+                output['updated_at'] = new_amenity.updated_at.strftime(Amenity.datetime_format)
+                output['created_at'] = new_amenity.created_at.strftime(Amenity.datetime_format)
+            else:
+                # FileStorage - note that the add method uses the dictionary 'output'
+                storage.add('Amenity', output)
+                # timestamp -> readable text
+                output['created_at'] = datetime.fromtimestamp(new_amenity.created_at)
+                output['updated_at'] = datetime.fromtimestamp(new_amenity.updated_at)
+        except IndexError as exc:
+            print("Error: ", exc)
+            return "Unable to add new Amenity!"
+
+        return jsonify(output)
+
+    @staticmethod
+    def update(amenity_id):
+        """ Class method that updates an existing amenity"""
+        if request.get_json() is None:
+            abort(400, "Not a JSON")
+
+        data = request.get_json()
+
+        try:
+            # update the Amenity record. Only name can be changed
+            result = storage.update('Amenity', amenity_id, data, ["name"])
+        except IndexError as exc:
+            print("Error: ", exc)
+            return "Unable to update specified amenity!"
+
+        if USE_DB_STORAGE:
+            output = {
+                "id": result.id,
+                "name": result.name,
+                "created_at": result.created_at.strftime(Amenity.datetime_format),
+                "updated_at": result.updated_at.strftime(Amenity.datetime_format)
+            }
+        else:
+            output = {
+                "id": result["id"],
+                "name": result["name"],
+                "created_at": datetime.fromtimestamp(result["created_at"]),
+                "updated_at": datetime.fromtimestamp(result["updated_at"])
+            }
+
+        # print out the updated amenity details
+        return jsonify(output)
