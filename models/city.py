@@ -77,3 +77,7 @@ class City(Base):
 
     # --- Static methods ---
     # TODO:
+    # def all()
+    # def specific()
+    # def create()
+    # def update()
