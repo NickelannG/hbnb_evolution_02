@@ -404,6 +404,71 @@ class Place(Base):
 
         return jsonify(output)
 
+    # def update()
+    @staticmethod
+    def update(place_id):
+        """ Class method that updates an existing place"""
+        if request.get_json() is None:
+            abort(400, "Not a JSON")
+
+        data = request.get_json()
+
+        try:
+            # update the place record.
+            result = storage.update('Place', place_id, data, ["description",
+                                                              "address",
+                                                              "latitude",
+                                                              "longitude",
+                                                              "number_of_rooms",
+                                                              "number_of_bathrooms",
+                                                              "price_per_night",
+                                                              "max_guests",
+                                                              "name",
+                                                              "host_id",
+                                                              "city_id"])
+        except IndexError as exc:
+            print("Error: ", exc)
+            return "Unable to update specified place!"
+
+        if USE_DB_STORAGE:
+            output = {
+                "id": result.id,
+                "host_user_id": result.host_id,
+                "city_id": result.city_id,
+                "name": result.name,
+                "description": result.description,
+                "address": result.address,
+                "latitude": result.latitude,
+                "longitude": result.longitude,
+                "number_of_rooms": result.number_of_rooms,
+                "bathrooms": result.number_of_bathrooms,
+                "price_per_night": result.price_per_night,
+                "max_guests": result.max_guests,
+                "created_at": result.created_at.strftime(Place.datetime_format),
+                "updated_at": result.updated_at.strftime(Place.datetime_format)
+            }
+        else:
+            output = {
+                "id": result["id"],
+                "host_id": result["host_id"],
+                "city_id": result["city_id"],
+                "name": result["name"],
+                "description": result["description"],
+                "address": result["address"],
+                "latitude": result["latitude"],
+                "longitude": result["longitude"],
+                "number_of_rooms": result["number_of_rooms"],
+                "bathrooms": result["number_of_bathrooms"],
+                "price_per_night": result["price_per_night"],
+                "max_guests": result["max_guests"],
+                "created_at": datetime.fromtimestamp(result["created_at"]),
+                "updated_at": datetime.fromtimestamp(result["updated_at"])
+            }
+
+        # print out the updated place details
+        return jsonify(output)
+
+
 class Amenity(Base):
     """Representation of amenity """
 
