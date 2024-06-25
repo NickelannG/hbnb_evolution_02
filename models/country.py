@@ -265,6 +265,7 @@ class Country(Base):
     def cities_data(country_code):
         """ Class method that returns a specific country's cities"""
         data = []
+        countries_cities = {}
         wanted_country_id = ""
 
         country_data = storage.get("Country")
@@ -277,16 +278,15 @@ class Country(Base):
             for row in country_data:
                 if row.code == country_code:
                     wanted_country_id = row.id
+            specific_country = storage.get("Country", wanted_country_id)      
+              # Note the use of the amenities relationship
+            for item in specific_country.cities:
+                data.append(item.name)
 
-            for v in city_data:
-                if v.country_id == wanted_country_id:
-                    data.append({
-                        "id": v.id,
-                        "name": v.name,
-                        "country_id": v.country_id,
-                        "created_at":v.created_at.strftime(Country.datetime_format),
-                        "updated_at":v.updated_at.strftime(Country.datetime_format)
-                    })
+            countries_cities[specific_country.name] = data
+
+            return countries_cities
+
         else:
             for k, v in country_data.items():
                 if v['code'] == country_code:
@@ -303,3 +303,47 @@ class Country(Base):
                     })
 
         return jsonify(data)
+
+    #@staticmethod
+    #def cities_data(country_code):
+    #    """ Class method that returns a specific country's cities"""
+    #    data = []
+    #    wanted_country_id = ""
+#
+    #    country_data = storage.get("Country")
+    #    city_data = storage.get("City")
+#
+    #    if USE_DB_STORAGE:
+    #        # Once again, we have unoptimised code for DB Storage.
+    #        # Surely there is a better way to do this? Maybe using relationships?
+#
+    #        for row in country_data:
+    #            if row.code == country_code:
+    #                wanted_country_id = row.id
+#
+    #        for v in city_data:
+    #            if v.country_id == wanted_country_id:
+    #                data.append({
+    #                    "id": v.id,
+    #                    "name": v.name,
+    #                    "country_id": v.country_id,
+    #                    "created_at":v.created_at.strftime(Country.datetime_format),
+    #                    "updated_at":v.updated_at.strftime(Country.datetime_format)
+    #                })
+    #    else:
+    #        for k, v in country_data.items():
+    #            if v['code'] == country_code:
+    #                wanted_country_id = v['id']
+#
+    #        for k, v in city_data.items():
+    #            if v['country_id'] == wanted_country_id:
+    #                data.append({
+    #                    "id": v['id'],
+    #                    "name": v['name'],
+    #                    "country_id": v['country_id'],
+    #                    "created_at":datetime.fromtimestamp(v['created_at']),
+    #                    "updated_at":datetime.fromtimestamp(v['updated_at'])
+    #                })
+#
+    #    return jsonify(data)
+#
