@@ -235,90 +235,51 @@ class City(Base):
 
         # print out the updated city details
             return jsonify(output)
-    
 
-    #@staticmethod
-    #def cities_specific_country_get(city_id):
-    #    """ Class method that returns a specific country's data based on city ID """
-    #    data = []
-#
-    #    try:
-    #        city_data = storage.get('City', city_id)
-    #    except IndexError as exc:
-    #        print("Error: ", exc)
-    #        return "City not found!"
-#
-    #    country_id = city_data.country_id if USE_DB_STORAGE else city_data['country_id']
-#
-    #    try:
-    #        country_data = storage.get('Country', country_id)
-    #    except IndexError as exc:
-    #        print("Error: ", exc)
-    #        return "Country not found!"
-#
-    #    if USE_DB_STORAGE:
-    #        # DBStorage
-    #        data.append({
-    #            "id": country_data.id,
-    #            "name": country_data.name,
-    #            "code": country_data.code,
-    #            "created_at": country_data.created_at.strftime(Country.datetime_format),
-    #            "updated_at": country_data.updated_at.strftime(Country.datetime_format)
-    #        })
-    #    else:
-    #        # FileStorage
-    #        data.append({
-    #            "id": country_data['id'],
-    #            "name": country_data['name'],
-    #            "code": country_data['code'],
-    #            "created_at": datetime.fromtimestamp(country_data['created_at']).strftime(Country.datetime_format),
-    #            "updated_at": datetime.fromtimestamp(country_data['updated_at']).strftime(Country.datetime_format)
-    #        })
-#
-    #    return jsonify(data)
-#
-
-# Kept just incase
-
+    # def countries_data() - tested 
+    # Check country data based on city input
     @staticmethod
     def countries_data(city_id):
-         """ Class method that returns a specific city's country"""
-         data = []
-         cities_countries = {}
-         wanted_city_id = ""
+        """ Class method that returns a specific city's country"""
+        # data = []
+        # cities_countries = {}
+        result = ""
+# 
+        # country_data = storage.get("Country")
+        city_data = storage.get("City")
 
-         country_data = storage.get("Country")
-         city_data = storage.get("City")
-
-         if USE_DB_STORAGE:
-             # Once again, we have unoptimised code for DB Storage.
-             # Surely there is a better way to do this? Maybe using relationships?
+        if USE_DB_STORAGE:
+            # Once again, we have unoptimised code for DB Storage.
+            # Surely there is a better way to do this? Maybe using relationships?
 
             for row in city_data:
                 if row.id == city_id:
-                    wanted_city_id = row.id
-            specific_cities = storage.get("City", wanted_city_id)
+                    # wanted_city_id = row.id
+                    specific_cities = storage.get("City", city_id)
 
-            for item in specific_cities.country:
-                data.append(item.name)
+            country = specific_cities.country
+            # for item in specific_cities.country:
+            #     data.append(item.name)
 
-            cities_countries[specific_cities.name] = data
+            result = specific_cities.name + ' is a city in ' + country.name + '!!'
+            # cities_countries[specific_cities.name] = data
 
-            return cities_countries
+            # return cities_countries
+            return result
 
-         else:
-             for k, v in city_data.items():
+        else:
+            for k, v in city_data.items():
                 if v['id'] == city_id:
                     wanted_city_id = v['id']
 
-             for k, v in country_data.items():
-                 if v['city_id'] == wanted_city_id:
-                     data.append({
-                         "id": v['id'],
-                         "name": v['name'],
-                         "country_code": v['country_code'],
-                         "created_at":datetime.fromtimestamp(v['created_at']),
-                         "updated_at":datetime.fromtimestamp(v['updated_at'])
+            for k, v in country_data.items():
+                if v['city_id'] == wanted_city_id:
+                    data.append({
+                        "id": v['id'],
+                        "name": v['name'],
+                        "country_code": v['country_code'],
+                        "created_at":datetime.fromtimestamp(v['created_at']),
+                        "updated_at":datetime.fromtimestamp(v['updated_at'])
                      })
 
-         return jsonify(data)
+        return jsonify(data)
