@@ -281,9 +281,10 @@ class City(Base):
 # Kept just incase
 
     @staticmethod
-    def cities_specific_country_get(city_id):
+    def countries_data(city_id):
          """ Class method that returns a specific city's country"""
          data = []
+         cities_countries = {}
          wanted_city_id = ""
 
          country_data = storage.get("Country")
@@ -293,30 +294,29 @@ class City(Base):
              # Once again, we have unoptimised code for DB Storage.
              # Surely there is a better way to do this? Maybe using relationships?
 
-             for row in city_data:
-                 if row.id == city_id:
-                     wanted_city_id = row.id
+            for row in city_data:
+                if row.id == city_id:
+                    wanted_city_id = row.id
+            specific_cities = storage.get("City", wanted_city_id)
 
-             for v in city_data:
-                 if v.city_id == wanted_city_id:
-                     data.append({
-                         "id": v.id,
-                         "name": v.name,
-                         "country_id": v.country_id,
-                         "created_at":v.created_at.strftime(City.datetime_format),
-                         "updated_at":v.updated_at.strftime(City.datetime_format)
-                     })
+            for item in specific_cities.country:
+                data.append(item.name)
+
+            cities_countries[specific_cities.name] = data
+
+            return cities_countries
+
          else:
              for k, v in city_data.items():
-                 if v['code'] == city_code:
-                     wanted_city_id = v['id']
+                if v['id'] == city_id:
+                    wanted_city_id = v['id']
 
              for k, v in country_data.items():
-                 if v['country_id'] == wanted_city_id:
+                 if v['city_id'] == wanted_city_id:
                      data.append({
                          "id": v['id'],
                          "name": v['name'],
-                         "country_id": v['country_id'],
+                         "country_code": v['country_code'],
                          "created_at":datetime.fromtimestamp(v['created_at']),
                          "updated_at":datetime.fromtimestamp(v['updated_at'])
                      })

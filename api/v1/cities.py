@@ -32,15 +32,15 @@ def cities_specific_country_get(city_id):
     """ Retrieves the data for the country the city belongs to """
 
     # Using model relationship to get data
-    from data import storage
-    data = []
-    city_data = storage.get('City', 'id', city_id)
-    c = city_data[0].country
-    data.append({
-        "id": c.id,
-        "name": c.name,
-        "code": c.code,
-        "created_at":c.created_at.strftime(City.datetime_format),
-        "updated_at":c.updated_at.strftime(City.datetime_format)
-    })
-    return data
+    # from data import storage
+    # data = []
+    # city_data = storage.get('City', 'id', city_id)
+    # c = city_data[0].country
+    # data.append({
+    #     "id": c.id,
+    #     "name": c.name,
+    #     "code": c.code,
+    #     "created_at":c.created_at.strftime(City.datetime_format),
+    #     "updated_at":c.updated_at.strftime(City.datetime_format)
+    # })
+    return City.countries_data(city_id)
