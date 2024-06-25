@@ -12,6 +12,8 @@ from data import storage, USE_DB_STORAGE, Base
 class City(Base):
     """Representation of city """
 
+    datetime_format = "%Y-%m-%dT%H:%M:%S.%f"
+
     # Class attrib defaults
     id = None
     created_at = None
@@ -79,7 +81,7 @@ class City(Base):
     # --- Static methods ---
     # TODO:
 
-    # def all()
+    # def all() - tested
     @staticmethod
     def all():
         """ Class method that returns all city data"""
@@ -115,7 +117,7 @@ class City(Base):
 
         return jsonify(data)
     
-    # def specific()
+    # def specific() - tested
     @staticmethod
     def specific(city_id):
         """ Class method that returns a specific city data"""

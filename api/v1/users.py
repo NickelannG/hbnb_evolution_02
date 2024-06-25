@@ -3,6 +3,7 @@
 from api.v1 import api_routes
 from models.user import User
 
+# url http://127.0.0.1:5000/api/v1/users
 
 @api_routes.route('/users', methods=["GET"])
 def users_get():
