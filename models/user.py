@@ -6,6 +6,7 @@ import uuid
 import re
 from flask import jsonify, request, abort
 from sqlalchemy import Column, String, DateTime
+from sqlalchemy.orm import relationship
 from data import storage, USE_DB_STORAGE, Base
 
 class User(Base):
@@ -32,7 +33,7 @@ class User(Base):
         __email = Column("email", String(128), nullable=False)
         __password = Column("password", String(128), nullable=False)
         # properties = relationship("Place", back_populates="owner", cascade="delete, delete-orphan")
-        # reviews = relationship("Review", back_populates="writer", cascade="delete, delete-orphan")
+        reviews = relationship("Review", back_populates="writer", cascade="delete, delete-orphan")
 
     # Constructor
     def __init__(self, *args, **kwargs):
