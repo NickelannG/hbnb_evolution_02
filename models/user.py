@@ -33,7 +33,7 @@ class User(Base):
         __email = Column("email", String(128), nullable=False)
         __password = Column("password", String(128), nullable=False)
         properties = relationship("Place", back_populates="owner", cascade="delete, delete-orphan")
-        reviews = relationship("Review", back_populates="writer", cascade="delete, delete-orphan")
+        # reviews = relationship("Review", back_populates="writer", cascade="delete, delete-orphan")
 
     # Constructor
     def __init__(self, *args, **kwargs):
@@ -283,3 +283,53 @@ class User(Base):
 
         # print out the updated user details
         return jsonify(output)
+
+    @staticmethod
+    def place_data(user_id):
+        """ Class method that returns a specific user's places"""
+        data = []
+        user_places = {}
+        # wanted_user_id = ""
+
+        user_data = storage.get("User")
+        place_data = storage.get("Place")
+
+        if USE_DB_STORAGE:
+
+            for row in user_data:
+                if row.id == user_id:
+                    # wanted_user_id = row.id
+                    specific_user = storage.get("User", user_id)      
+              # Note the use of the place relationship
+            for item in specific_user.properties:
+                data.append(item.first_name)
+
+            user_places[specific_user.first_name] = data
+
+            return user_places
+
+        else:
+            for k, v in user_data.items():
+                if v['id'] == user_id:
+                    wanted_user_id = v['id']
+
+            for k, v in place_data.items():
+                if v['host_id'] == wanted_user_id:
+                    data.append({
+                        "id": v['id'],
+                        "host_user_id": v['host_id'],
+                        "city_id": v['city_id'],
+                        "name": v['name'],
+                        "description": v['description'],
+                        "address": v['address'],
+                        "latitude": v['latitude'],
+                        "longitude": v['longitude'],
+                        "number_of_rooms": v['number_of_rooms'],
+                        "bathrooms": v['number_of_bathrooms'],
+                        "price_per_night": v['price_per_night'],
+                        "max_guests": v['max_guests'],
+                        "created_at": datetime.fromtimestamp(v['created_at']),
+                        "updated_at": datetime.fromtimestamp(v['updated_at'])
+                    })
+
+        return jsonify(data)

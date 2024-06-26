@@ -32,7 +32,7 @@ class Review(Base):
         __commentor_user_id = Column("last_name", String(128), ForeignKey('users.id'), nullable=True, default="")
         __place_id = Column("email", String(128), ForeignKey('places.id'), nullable=False)
         __rating = Column("password", String(128), nullable=False)
-        writer = relationship("User", back_populates="reviews", cascade="delete, delete-orphan")
+        # writer = relationship("User", back_populates="reviews", cascade="delete, delete-orphan")
         place = relationship("Place", back_populates="reviews")
 
     # Constructor
