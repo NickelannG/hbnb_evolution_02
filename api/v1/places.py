@@ -38,7 +38,7 @@ def place_specific_reviews_get(place_id):
     """ returns reviews data of specified place"""
     return place_specific_reviews_get(place_id)
 
-@api_routes.route('/places/<place_id>/places_amenities', methods=['GET'])
+@api_routes.route('/places/<place_id>/places_amenities', methods=["GET"])
 def places_amenities_get(place_id):
     """ returns list of amenities from a specified place """
     return places_amenities_get(place_id)

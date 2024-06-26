@@ -79,7 +79,7 @@ class City(Base):
             raise ValueError("Invalid country_id specified: {}".format(value))
 
     # --- Static methods ---
-    # TODO:
+
 
     # def all() - tested
     @staticmethod

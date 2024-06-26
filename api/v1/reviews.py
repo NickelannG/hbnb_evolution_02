@@ -43,9 +43,9 @@ def reviews_put(review_id):
 @api_routes.route('/reviews/<review_id>/users', methods=["GET"])
 def users_specific_reviews_get(review_id):
     """ return user data from specified review """
-    return Review.users_specific_reviews_get(review_id)
+    return Review.users_get(review_id)
 
 @api_routes.route('/reviews/<review_id>/places', methods=["GET"])
 def places_specific_reviews_get(review_id):
     """ return place data from specified review """
-    return Review.places_specific_reviews_get(review_id)
+    return Review.places_get(review_id)

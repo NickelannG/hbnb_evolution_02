@@ -1,11 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 """ Review model """
 
 from datetime import datetime
 import uuid
 import re
 from flask import jsonify, request, abort
-from sqlalchemy import Column, String, DateTime
+from sqlalchemy import Column, String, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from data import storage, USE_DB_STORAGE, Base
 
@@ -29,10 +29,11 @@ class Review(Base):
         created_at = Column(DateTime, nullable=False, default=datetime.now())
         updated_at = Column(DateTime, nullable=False, default=datetime.now())
         __feedback = Column("first_name", String(128), nullable=True, default="")
-        __commentor_user_id = Column("last_name", String(128), nullable=True, default="")
-        __place_id = Column("email", String(128), nullable=False)
+        __commentor_user_id = Column("last_name", String(128), ForeignKey('users.id'), nullable=True, default="")
+        __place_id = Column("email", String(128), ForeignKey('places.id'), nullable=False)
         __rating = Column("password", String(128), nullable=False)
         writer = relationship("User", back_populates="reviews", cascade="delete, delete-orphan")
+        place = relationship("Place", back_populates="reviews")
 
     # Constructor
     def __init__(self, *args, **kwargs):
@@ -108,14 +109,15 @@ class Review(Base):
         return self.__rating
     
     @rating.setter
-    def rating (self, value):
+    def rating(self, value):
         """Setter for rating"""
         if isinstance(value, int) and 0 <= value <= 5:
             self.__rating = value
         else:
             raise ValueError("Rating must be an integer between 0 and 5")
 
-    # --- Static methods ---
+    # --- Static methods --- #
+    # -- def all() -- #
     @staticmethod
     def all():
         """ Class method that returns all review data"""
@@ -134,9 +136,9 @@ class Review(Base):
                 data.append({
                     "id": row.id,
                     "feedback": row.feedback,
-                    "commentor_user_id": row.commenter_user_id,
+                    "commentor_user_id": row.commentor_user_id,
                     "place_id": row.place_id,
-                    "place_id": row.place_id,
+                    "rating": row.rating,
                     "created_at": row.created_at.strftime(Review.datetime_format),
                     "updated_at": row.updated_at.strftime(Review.datetime_format)
                 })
@@ -154,7 +156,7 @@ class Review(Base):
                 })
 
         return jsonify(data)
-    
+
     @staticmethod
     def specific(review_id):
         """ Class method that returns a specific review data"""
@@ -190,7 +192,7 @@ class Review(Base):
             })
 
         return jsonify(data)
-    
+
     @staticmethod
     def create():
         """ Class method that creates a new review"""
@@ -244,3 +246,122 @@ class Review(Base):
             return "Unable to add new Review!"
 
         return jsonify(output)
+
+    @staticmethod
+    def update(review_id):
+        """ Class method that updates an existing review"""
+        if request.get_json() is None:
+            abort(400, "Not a JSON")
+
+        data = request.get_json()
+
+        try:
+            # update the Review record.
+            result = storage.update('Review', review_id, data, ["feedback",
+                                                                "commentor_user_id",
+                                                                "place_id",
+                                                                "rating"]
+                                                                )
+        except IndexError as exc:
+            print("Error: ", exc)
+            return "Unable to update specified review!"
+
+        if USE_DB_STORAGE:
+            output = {
+                "id": result.id,
+                "feedback": result.feedback,
+                "commentor_user_id": result.commentor_user_id,
+                "place_id": result.place_id,
+                "rating": result.rating,
+                "created_at": result.created_at.strftime(Review.datetime_format),
+                "updated_at": result.updated_at.strftime(Review.datetime_format)
+            }
+        else:
+            output = {
+                "id": result['id'],
+                "feedback": result['feedback'],
+                "commentor_user_id": result['commentor_user_id'],
+                "place_id": result['place_id'],
+                "rating": result['rating'],
+                "created_at": datetime.fromtimestamp(result["created_at"]),
+                "updated_at": datetime.fromtimestamp(result["updated_at"])
+            }
+
+        # print out the updated review details
+        return jsonify(output)
+
+    @staticmethod
+    def users_get(review_id):
+        """ Class method that returns writer data of specified review """
+        result = ""
+
+        review_data = storage.get("Review")
+
+        if USE_DB_STORAGE:
+
+            for row in review_data:
+                if row.id == review_id:
+                    specific_review = storage.get("Review", review_id)
+
+            writer = specific_review.writer
+
+            result = specific_review.name + ' is a review by ' + writer.name
+
+            return result
+
+        else:
+            for k, v in review_data.items():
+                if v['id'] == review_id:
+                    wanted_review_id = v['id']
+
+            for k, v in user_data.items():
+                if v['review_id'] == wanted_review_id:
+                    data.append({
+                        "id": v['id'],
+                        "feedback": v['feedback'],
+                        "commentor_user_id": v['commentor_user_id'],
+                        "place_id": v['place_id'],
+                        "rating": v['rating'],
+                        "created_at":datetime.fromtimestamp(v['created_at']),
+                        "updated_at":datetime.fromtimestamp(v['updated_at'])
+                     })
+
+        return jsonify(data)
+
+    @staticmethod
+    def places_get(review_id):
+        """ Class method that returns name of place from specified review """
+        result = ""
+
+        review_data = storage.get("Review")
+
+        if USE_DB_STORAGE:
+
+            for row in review_data:
+                if row.id == review_id:
+                    specific_review = storage.get("Review", review_id)
+
+            place = specific_review.place
+
+            result = specific_review.name + ' is a review of ' + place.name
+
+            return result
+
+        else:
+            for k, v in review_data.items():
+                if v['id'] == review_id:
+                    wanted_review_id = v['id']
+
+            for k, v in place_data.items():
+                if v['review_id'] == wanted_review_id:
+                    data.append({
+                        "id": v['id'],
+                        "feedback": v['feedback'],
+                        "commentor_user_id": v['commentor_user_id'],
+                        "place_id": v['place_id'],
+                        "rating": v['rating'],
+                        "created_at":datetime.fromtimestamp(v['created_at']),
+                        "updated_at":datetime.fromtimestamp(v['updated_at'])
+                     })
+
+        return jsonify(data)
