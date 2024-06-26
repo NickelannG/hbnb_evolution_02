@@ -29,6 +29,7 @@ class City(Base):
         __name = Column("name", String(128), nullable=False)
         __country_id = Column("country_id", String(128), ForeignKey('countries.id'), nullable=False)
         country = relationship("Country", back_populates="cities")
+        place = relationship("Place", back_populates="city")
 
     # constructor
     def __init__(self, *args, **kwargs):

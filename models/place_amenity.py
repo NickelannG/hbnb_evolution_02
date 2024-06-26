@@ -64,6 +64,7 @@ class Place(Base):
         amenities = relationship("Amenity", secondary=place_amenity, back_populates = 'places')
         reviews = relationship("Review", back_populates="place")
         owner = relationship("User", back_populates="properties")
+        city = relationship("City", back_populates="place")
 
     # Constructor
     def __init__(self, *args, **kwargs):
@@ -468,6 +469,136 @@ class Place(Base):
         # print out the updated place details
         return jsonify(output)
 
+    # def user data of specified place
+    @staticmethod
+    def place_specific_user_get(place_id):
+        """ returns host user data of specified place """
+        result = ""
+# 
+        # user_data = storage.get("User")
+        place_data = storage.get("Place")
+
+        if USE_DB_STORAGE:
+
+            for row in place_data:
+                if row.id == place_id:
+                    specific_place = storage.get("Place", place_id)
+
+            owner = specific_place.owner
+
+            result = specific_place.name + ' is a place owned by ' + owner.first_name + ' ' + owner.last_name
+
+            return result
+
+        else:
+            for k, v in place_data.items():
+                if v['id'] == place_id:
+                    wanted_place_id = v['id']
+
+            for k, v in user_data.items():
+                if v['place_id'] == wanted_place_id:
+                    data.append({
+                        "id": v["id"],
+                        "first_name": v["first_name"],
+                        "last_name": v["last_name"],
+                        "email": v["email"],
+                        "created_at":datetime.fromtimestamp(v['created_at']),
+                        "updated_at":datetime.fromtimestamp(v['updated_at'])
+                     })
+
+        return jsonify(data)
+
+    # def city data of specified place
+    @staticmethod
+    def place_specific_city_get(place_id):
+        """ returns city data of specified place """
+        result = ""
+# 
+        # user_data = storage.get("User")
+        place_data = storage.get("Place")
+
+        if USE_DB_STORAGE:
+
+            for row in place_data:
+                if row.id == place_id:
+                    specific_place = storage.get("Place", place_id)
+
+            city = specific_place.city
+
+            result = specific_place.name + ' is a place within ' + city.name
+
+            return result
+
+        else:
+            for k, v in place_data.items():
+                if v['id'] == place_id:
+                    wanted_place_id = v['id']
+
+            for k, v in city_data.items():
+                if v['place_id'] == wanted_place_id:
+                    data.append({
+                        "id": v['id'],
+                        "name": v['name'],
+                        "country_id": v['country_id'],
+                        "created_at":datetime.fromtimestamp(v['created_at']),
+                        "updated_at":datetime.fromtimestamp(v['updated_at'])
+                     })
+
+        return jsonify(data)
+
+
+    # def review list of specified place
+    @staticmethod
+    def place_specific_reviews_get(place_id):
+        # """ returns list of reviews of specified place """
+        # data = []
+        # place_reviews = {}
+        # # wanted_user_id = ""
+# 
+        # user_data = storage.get("User")
+        # place_data = storage.get("Place")
+# 
+        # if USE_DB_STORAGE:
+# 
+        #     for row in user_data:
+        #         if row.id == user_id:
+        #             # wanted_user_id = row.id
+        #             specific_user = storage.get("User", user_id)      
+        #       # Note the use of the place relationship
+        #     for item in specific_user.properties:
+        #         data.append(item.name)
+# 
+        #     user_key = f"{specific_user.first_name} {specific_user.last_name}-Host"
+        #     user_places[user_key] = data
+# 
+        #     return user_places
+# 
+        # else:
+        #     for k, v in user_data.items():
+        #         if v['id'] == user_id:
+        #             wanted_user_id = v['id']
+# 
+        #     for k, v in place_data.items():
+        #         if v['host_id'] == wanted_user_id:
+        #             data.append({
+        #                 "id": v['id'],
+        #                 "host_user_id": v['host_id'],
+        #                 "city_id": v['city_id'],
+        #                 "name": v['name'],
+        #                 "description": v['description'],
+        #                 "address": v['address'],
+        #                 "latitude": v['latitude'],
+        #                 "longitude": v['longitude'],
+        #                 "number_of_rooms": v['number_of_rooms'],
+        #                 "bathrooms": v['number_of_bathrooms'],
+        #                 "price_per_night": v['price_per_night'],
+        #                 "max_guests": v['max_guests'],
+        #                 "created_at": datetime.fromtimestamp(v['created_at']),
+        #                 "updated_at": datetime.fromtimestamp(v['updated_at'])
+        #             })
+# 
+        # return jsonify(data)
+# 
 
 class Amenity(Base):
     """Representation of amenity """
