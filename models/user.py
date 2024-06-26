@@ -302,9 +302,10 @@ class User(Base):
                     specific_user = storage.get("User", user_id)      
               # Note the use of the place relationship
             for item in specific_user.properties:
-                data.append(item.first_name)
+                data.append(item.name)
 
-            user_places[specific_user.first_name] = data
+            user_key = f"{specific_user.first_name} {specific_user.last_name}-Host"
+            user_places[user_key] = data
 
             return user_places
 
