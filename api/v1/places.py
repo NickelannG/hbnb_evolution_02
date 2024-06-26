@@ -22,3 +22,23 @@ def places_specific_get(place_id):
 def places_put(place_id):
     """updates a specific Place and returns it"""
     return Place.update(place_id)
+
+@api_routes.route('/places/<place_id>/user', methods=["GET"])
+def place_specific_user_get(place_id):
+    """ returns host user data of specified place """
+    return place_specific_user_get(place_id)
+
+@api_routes.route('/places/<place_id>/city', methods=["GET"])
+def place_specific_city_get(place_id):
+    """ returns city info of specified place"""
+    return place_specific_city_get(place_id)
+
+@api_routes.route('/places/<place_id>/review', methods=["GET"])
+def place_specific_reviews_get(place_id):
+    """ returns reviews data of specified place"""
+    return place_specific_reviews_get(place_id)
+
+@api_routes.route('/places/<place_id>/places_amenities', methods=['GET'])
+def places_amenities_get(place_id):
+    """ returns list of amenities from a specified place """
+    return places_amenities_get(place_id)

@@ -22,3 +22,8 @@ def amenity_specific_get(amenity_id):
 def amenity_put(amenity_id):
     """ Updates a specific Amenity and returns it """
     return Amenity.update(amenity_id)
+
+@api_routes.route('/amenities/<amenity_id>/amenities_places', methods=['GET'])
+def amenities_places_get(amenity_id):
+    """ Provides all names of places that contains named amenity """
+    return Amenity.amenities_places_get(amenity_id)

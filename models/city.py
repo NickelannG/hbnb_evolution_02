@@ -172,6 +172,9 @@ class City(Base):
             return repr(exc) + "\n"
 
         # TO DO - extra check if city doesnt already exist
+        # city_data = storage.get('City')
+        # for row in city_data:
+        #   if row.name == new_city[name]
 
         output = {
             "id": new_city.id,

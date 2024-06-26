@@ -39,3 +39,13 @@ def users_put(user_id):
     # use the User class' static .update method
     # can only update first_name and last_name
     return User.update(user_id)
+
+@api_routes.route('/api/v1/users/<user_id>/reviews', methods=["GET"])
+def reviews_specific_users_get(user_id):
+    """ Getting all reviews of specified user """
+    return User.reviews_specific_users_get(user_id)
+
+@api_routes.route('/api/v1/users/<user_id>/places', methods=["GET"])
+def places_specific_host_get(user_id):
+    """Getting all places of specified host """
+    return User.places_specific_host_get(user_id)
