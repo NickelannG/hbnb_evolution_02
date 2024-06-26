@@ -114,3 +114,133 @@ class Review(Base):
             self.__rating = value
         else:
             raise ValueError("Rating must be an integer between 0 and 5")
+
+    # --- Static methods ---
+    @staticmethod
+    def all():
+        """ Class method that returns all review data"""
+        data = []
+
+        try:
+            review_data = storage.get('Review')
+        except IndexError as exc:
+            print("Error: ", exc)
+            return "Unable to load reviews!"
+
+        if USE_DB_STORAGE:
+            # DBStorage
+            for row in review_data:
+                # use print(row.__dict__) to see the contents of the sqlalchemy model objects
+                data.append({
+                    "id": row.id,
+                    "feedback": row.feedback,
+                    "commentor_user_id": row.commenter_user_id,
+                    "place_id": row.place_id,
+                    "place_id": row.place_id,
+                    "created_at": row.created_at.strftime(Review.datetime_format),
+                    "updated_at": row.updated_at.strftime(Review.datetime_format)
+                })
+        else:
+            # FileStorage
+            for k, v in review_data.items():
+                data.append({
+                    "id": v['id'],
+                    "feedback": v['feedback'],
+                    "commentor_user_id": v['commentor_user_id'],
+                    "place_id": v['place_id'],
+                    "rating": v['rating'],
+                    "created_at": datetime.fromtimestamp(v['created_at']),
+                    "updated_at": datetime.fromtimestamp(v['updated_at'])
+                })
+
+        return jsonify(data)
+    
+    @staticmethod
+    def specific(review_id):
+        """ Class method that returns a specific review data"""
+        data = []
+
+        try:
+            review_data = storage.get('Review', review_id)
+        except IndexError as exc:
+            print("Error: ", exc)
+            return "Review not found!"
+
+        if USE_DB_STORAGE:
+            # DBStorage
+            data.append({
+                "id": review_data.id,
+                "feedback": review_data.feedback,
+                "commentor_user_id": review_data.commentor_user_id,
+                "place_id": review_data.place_id,
+                "rating": review_data.rating,
+                "created_at": review_data.created_at.strftime(Review.datetime_format),
+                "updated_at": review_data.updated_at.strftime(Review.datetime_format)
+            })
+        else:
+            # FileStorage
+            data.append({
+                "id": review_data['id'],
+                "feedback": review_data['feedback'],
+                "commentor_user_id": review_data['commentor_user_id'],
+                "place_id": review_data['place_id'],
+                "rating": review_data['rating'],
+                "created_at": datetime.fromtimestamp(review_data['created_at']),
+                "updated_at": datetime.fromtimestamp(review_data['updated_at'])
+            })
+
+        return jsonify(data)
+    
+    @staticmethod
+    def create():
+        """ Class method that creates a new review"""
+        if request.get_json() is None:
+            abort(400, "Not a JSON")
+
+        data = request.get_json()
+        if 'feedback' not in data:
+            abort(400, "Missing feedback")
+        if 'commentor_user_id' not in data:
+            abort(400, "Missing commentor user id")
+        if 'place_id' not in data:
+            abort(400, "Missing place id")
+        if 'rating' not in data:
+            abort(400, "Missing rating")
+
+        try:
+            new_review = Review(feedback=data["feedback"], commentor_user_id=data["commentor_user_id"],
+                    place_id=data["place_id"], rating=data["rating"])
+        except ValueError as exc:
+            return repr(exc) + "\n"
+
+        # TODO: add a check here to ensure that the provided review is not already used by someone else in the DB
+        # If you see this message, tell me and I will (maybe) give you a cookie lol
+
+        output = {
+            "id": new_review.id,
+            "feedback": new_review.feedback,
+            "commentor_user_id": new_review.commentor_user_id,
+            "place_id": new_review.place_id,
+            "rating": new_review.rating,
+            "created_at": new_review.created_at,
+            "updated_at": new_review.updated_at
+        }
+
+        try:
+            if USE_DB_STORAGE:
+                # DBStorage - note that the add method uses the Review object instance 'new_review'
+                storage.add('Review', new_review)
+                # datetime -> readable text
+                output['created_at'] = new_review.created_at.strftime(Review.datetime_format)
+                output['updated_at'] = new_review.updated_at.strftime(Review.datetime_format)
+            else:
+                # FileStorage - note that the add method uses the dictionary 'output'
+                storage.add('Review', output)
+                # timestamp -> readable text
+                output['created_at'] = datetime.fromtimestamp(new_review.created_at)
+                output['updated_at'] = datetime.fromtimestamp(new_review.updated_at)
+        except IndexError as exc:
+            print("Error: ", exc)
+            return "Unable to add new Review!"
+
+        return jsonify(output)
