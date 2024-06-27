@@ -18,7 +18,7 @@ class Review(Base):
     id = None
     created_at = None
     updated_at = None
-    __feedback = ""
+    __comment = ""
     __commentor_user_id = ""
     __place_id = ""
     __rating = ""
@@ -28,7 +28,7 @@ class Review(Base):
         id = Column(String(60), nullable=False, primary_key=True)
         created_at = Column(DateTime, nullable=False, default=datetime.now())
         updated_at = Column(DateTime, nullable=False, default=datetime.now())
-        __feedback = Column("first_name", String(128), nullable=True, default="")
+        __comment = Column("first_name", String(128), nullable=True, default="")
         __commentor_user_id = Column("last_name", String(128), ForeignKey('users.id'), nullable=True, default="")
         __place_id = Column("email", String(128), ForeignKey('places.id'), nullable=False)
         __rating = Column("password", String(128), nullable=False)
@@ -46,10 +46,10 @@ class Review(Base):
             self.created_at = datetime.now().timestamp()
             self.updated_at = self.created_at
         
-        # Only allow feedback, commentor_user_id, place_id, rating.
+        # Only allow comment, commentor_user_id, place_id, rating.
         # Setattr will call the setters for these attribs 
         attr_list = [
-            "feedback", "commentor_user_id", "place_id", "rating"
+            "comment", "commentor_user_id", "place_id", "rating"
         ]
 
         if kwargs:
@@ -59,20 +59,22 @@ class Review(Base):
 
     # --- Getters and Setters ---
     @property
-    def feedback(self):
-        """Getter for feedback"""
-        return self.__feedback
+    def comment(self):
+        """Getter for comment"""
+        return self.__comment
     
-    @feedback.setter
-    def feedback(self, value):
-        """Setter for feedback"""
+    @comment.setter
+    def comment(self, value):
+        """Setter for comment"""
     
-        # Feedback must be at least 50 words
-        is_valid_feedback = len(value.split()) >= 50
-        if is_valid_feedback:
-            self.__feedback = value
+        # Comment must be at least 50 words
+        # add check for asci value - 
+        # create array of naughty words  - use split to check 
+        is_valid_comment = len(value.split()) >= 50
+        if is_valid_comment:
+            self.__comment = value
         else:
-            raise ValueError("feedback must be more than 50 words please")
+            raise ValueError("Comment must be more than 50 words please")
     
     @property
     def commentor_user_id(self):
@@ -135,7 +137,7 @@ class Review(Base):
                 # use print(row.__dict__) to see the contents of the sqlalchemy model objects
                 data.append({
                     "id": row.id,
-                    "feedback": row.feedback,
+                    "comment": row.comment,
                     "commentor_user_id": row.commentor_user_id,
                     "place_id": row.place_id,
                     "rating": row.rating,
@@ -147,7 +149,7 @@ class Review(Base):
             for k, v in review_data.items():
                 data.append({
                     "id": v['id'],
-                    "feedback": v['feedback'],
+                    "comment": v['comment'],
                     "commentor_user_id": v['commentor_user_id'],
                     "place_id": v['place_id'],
                     "rating": v['rating'],
@@ -172,7 +174,7 @@ class Review(Base):
             # DBStorage
             data.append({
                 "id": review_data.id,
-                "feedback": review_data.feedback,
+                "comment": review_data.comment,
                 "commentor_user_id": review_data.commentor_user_id,
                 "place_id": review_data.place_id,
                 "rating": review_data.rating,
@@ -183,7 +185,7 @@ class Review(Base):
             # FileStorage
             data.append({
                 "id": review_data['id'],
-                "feedback": review_data['feedback'],
+                "comment": review_data['comment'],
                 "commentor_user_id": review_data['commentor_user_id'],
                 "place_id": review_data['place_id'],
                 "rating": review_data['rating'],
@@ -200,8 +202,8 @@ class Review(Base):
             abort(400, "Not a JSON")
 
         data = request.get_json()
-        if 'feedback' not in data:
-            abort(400, "Missing feedback")
+        if 'comment' not in data:
+            abort(400, "Missing comment")
         if 'commentor_user_id' not in data:
             abort(400, "Missing commentor user id")
         if 'place_id' not in data:
@@ -210,7 +212,7 @@ class Review(Base):
             abort(400, "Missing rating")
 
         try:
-            new_review = Review(feedback=data["feedback"], commentor_user_id=data["commentor_user_id"],
+            new_review = Review(comment=data["comment"], commentor_user_id=data["commentor_user_id"],
                     place_id=data["place_id"], rating=data["rating"])
         except ValueError as exc:
             return repr(exc) + "\n"
@@ -220,7 +222,7 @@ class Review(Base):
 
         output = {
             "id": new_review.id,
-            "feedback": new_review.feedback,
+            "comment": new_review.comment,
             "commentor_user_id": new_review.commentor_user_id,
             "place_id": new_review.place_id,
             "rating": new_review.rating,
@@ -257,7 +259,7 @@ class Review(Base):
 
         try:
             # update the Review record.
-            result = storage.update('Review', review_id, data, ["feedback",
+            result = storage.update('Review', review_id, data, ["comment",
                                                                 "commentor_user_id",
                                                                 "place_id",
                                                                 "rating"]
@@ -269,7 +271,7 @@ class Review(Base):
         if USE_DB_STORAGE:
             output = {
                 "id": result.id,
-                "feedback": result.feedback,
+                "comment": result.comment,
                 "commentor_user_id": result.commentor_user_id,
                 "place_id": result.place_id,
                 "rating": result.rating,
@@ -279,7 +281,7 @@ class Review(Base):
         else:
             output = {
                 "id": result['id'],
-                "feedback": result['feedback'],
+                "comment": result['comment'],
                 "commentor_user_id": result['commentor_user_id'],
                 "place_id": result['place_id'],
                 "rating": result['rating'],
@@ -319,7 +321,7 @@ class Review(Base):
                 if v['review_id'] == wanted_review_id:
                     data.append({
                         "id": v['id'],
-                        "feedback": v['feedback'],
+                        "comment": v['comment'],
                         "commentor_user_id": v['commentor_user_id'],
                         "place_id": v['place_id'],
                         "rating": v['rating'],
@@ -357,7 +359,7 @@ class Review(Base):
                 if v['review_id'] == wanted_review_id:
                     data.append({
                         "id": v['id'],
-                        "feedback": v['feedback'],
+                        "comment": v['comment'],
                         "commentor_user_id": v['commentor_user_id'],
                         "place_id": v['place_id'],
                         "rating": v['rating'],
