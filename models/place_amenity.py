@@ -779,22 +779,23 @@ class Amenity(Base):
         if 'name' not in data:
             abort(400, "Missing name")
 
+
+    # access all keys and values within Amenity
+        amenity_data = storage.get("Amenity")
+            # Check all rows in amenity data
+        for row in amenity_data:
+            # Check if "name" is the same as ""
+            if row.name == data['name']:
+                abort(409, "Amenity with name '{}' already exists".format(data['name']))
         try:
             # use the specific() method before creating - catch the error in the try (try without try and except first).
             # "tries" to create new 'Amenity' instance with name
-            existing_amenity = Amenity.specific()
+            # existing_amenity = Amenity.specific()
+
             new_amenity = Amenity(name=data["name"])
         except ValueError as exc:
             return repr(exc) + "\n"
 
-        # access all keys and values within Amenity
-        amenity_data = storage.get("Amenity")
-
-        # Check all rows in amenity data
-        for row in amenity_data:
-            # Check if "name" is the same as ""
-            if row.name == new_amenity.name:
-                abort(409, "Amenity with name '{}' already exists".format(new_amenity.name))
 
         # if new_amenity.name == 
         # TODO: add a check here to ensure that the provided amenity is not already used by someone else in the DB
