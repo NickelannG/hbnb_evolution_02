@@ -769,21 +769,35 @@ class Amenity(Base):
     @staticmethod
     def create():
         """ Class method that creates a new amenity """
+        # data coming in has to be a JSON
         if request.get_json() is None:
             abort(400, "Not a JSON")
-
+        # assigns JSON data to "data" instance
         data = request.get_json()
+        # checks if "name" is present in 'data'
         if 'name' not in data:
             abort(400, "Missing name")
 
         try:
+            # "tries" to create new 'Amenity' instance with name
             new_amenity = Amenity(name=data["name"])
         except ValueError as exc:
             return repr(exc) + "\n"
 
+        # access all keys and values within Amenity
+        amenity_data = storage.get("Amenity")
+
+        # Check all rows in amenity data
+        for row in amenity_data:
+            # Check if "name" is the same as ""
+            if row.name == new_amenity.name:
+                abort(409, "Amenity with name '{}' already exists".format(new_amenity.name))
+
+        # if new_amenity.name == 
         # TODO: add a check here to ensure that the provided amenity is not already used by someone else in the DB
         # If you see this message, tell me and I will (maybe) give you a cookie lol
 
+        #creates dictionary "output" containing attributes of new 'Amenity'
         output = {
             "id": new_amenity.id,
             "name": new_amenity.name,
