@@ -43,7 +43,7 @@ def users_put(user_id):
 @api_routes.route('/users/<user_id>/reviews', methods=["GET"])
 def reviews_specific_users_get(user_id):
     """ Getting all reviews of specified user """
-    return User.reviews_specific_users_get(user_id)
+    return User.reviews_data(user_id)
 
 @api_routes.route('/users/<user_id>/places', methods=["GET"])
 def places_specific_host_get(user_id):

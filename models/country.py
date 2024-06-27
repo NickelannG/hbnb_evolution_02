@@ -261,6 +261,7 @@ class Country(Base):
 
         return jsonify(output)
 
+    # def list of cities of specified country code - tested OK
     @staticmethod
     def cities_data(country_code):
         """ Class method that returns a specific country's cities"""

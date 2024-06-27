@@ -295,6 +295,7 @@ class Review(Base):
         """ Class method that returns writer data of specified review """
         result = ""
 
+        user_data = storage.get("User")
         review_data = storage.get("Review")
 
         if USE_DB_STORAGE:

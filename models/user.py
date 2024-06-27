@@ -284,6 +284,7 @@ class User(Base):
         # print out the updated user details
         return jsonify(output)
 
+    # def list of places of specified host/user - tested OK
     @staticmethod
     def place_data(user_id):
         """ Class method that returns a specific user's places"""
@@ -334,3 +335,29 @@ class User(Base):
                     })
 
         return jsonify(data)
+
+
+    # def list of reviews based on user - Requires review data before testing
+    @staticmethod
+    def reviews_data(user_id):
+        """ Class method to provide
+        list of reviews of specified user """
+   
+        user_reviews = {}
+        reviews_list = []
+
+        user_data = storage.get("User")
+
+        if USE_DB_STORAGE:
+
+            for row in user_data:
+                if row.id == user_id:
+                    specific_user = storage.get("Place", user_id)
+
+        # Note the use of the reviews relationship
+            for item in specific_user.reviews:
+                reviews_list.append(item.name)
+
+            user_reviews[specific_user.name] = reviews_list
+
+            return user_reviews

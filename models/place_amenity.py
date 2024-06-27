@@ -842,3 +842,30 @@ class Amenity(Base):
 
         # print out the updated amenity details
         return jsonify(output)
+
+
+    # def list of places that contain the specified amenity
+    @staticmethod
+    def amenities_places_get(amenity_id):
+        """ Class method that defines
+        list of places that contain the
+        specified amenity"""
+
+        amenity_places = {}
+        places_list = []
+
+        amenity_data = storage.get("Amenity")
+
+        if USE_DB_STORAGE:
+
+            for row in amenity_data:
+                if row.id == amenity_id:
+                    specific_amenity = storage.get('Amenity', amenity_id)
+
+        # Note the use of the places relationship
+            for item in specific_amenity.places:
+                places_list.append(item.name)
+
+            amenity_places[specific_amenity.name] = places_list
+
+        return amenity_places
