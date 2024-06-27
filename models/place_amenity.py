@@ -779,8 +779,9 @@ class Amenity(Base):
             abort(400, "Missing name")
 
         try:
-            # use the specific() method before creating - catch the error in the try (try without try and except first)
+            # use the specific() method before creating - catch the error in the try (try without try and except first).
             # "tries" to create new 'Amenity' instance with name
+            existing_amenity = Amenity.specific()
             new_amenity = Amenity(name=data["name"])
         except ValueError as exc:
             return repr(exc) + "\n"
