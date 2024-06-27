@@ -553,7 +553,8 @@ class Place(Base):
         return jsonify(data)
 
 
-    # def list of reviews of specified place - NEED TO ADD DATA
+    # def list of reviews of specified place
+    # Tested - OK
     @staticmethod
     def place_specific_reviews_get(place_id):
         """ returns list of reviews of specified place """
@@ -570,10 +571,10 @@ class Place(Base):
             for row in place_data:
                 if row.id == place_id:
                     # wanted_user_id = row.id
-                    specific_place = storage.get("User", place_id)   
+                    specific_place = storage.get("Place", place_id)   
             # Note the use of the place relationship
             for item in specific_place.reviews:
-                data.append(item.name)
+                data.append(item.comment)
 
             # place_key = f"{specific_place.first_name} {specific_review.last_name}-Host"
             place_reviews[specific_place.name] = data
@@ -591,7 +592,7 @@ class Place(Base):
                     data.append({
                         "id": v['id'],
                         "feedback": v['feedback'],
-                        "commentor_user_id": v['commentor_user_id'],
+                        "user_id": v['user_id'],
                         "place_id": v['place_id'],
                         "rating": v['rating'],
                         "created_at": datetime.fromtimestamp(v['created_at']),
