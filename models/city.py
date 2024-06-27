@@ -245,11 +245,11 @@ class City(Base):
     @staticmethod
     def countries_data(city_id):
         """ Class method that returns a specific city's country"""
-        # data = []
+        data = []
         # cities_countries = {}
         result = ""
-# 
-        # country_data = storage.get("Country")
+        # Access country and city data
+        country_data = storage.get("Country")
         city_data = storage.get("City")
 
         if USE_DB_STORAGE:

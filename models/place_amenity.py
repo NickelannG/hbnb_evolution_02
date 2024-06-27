@@ -469,13 +469,14 @@ class Place(Base):
         # print out the updated place details
         return jsonify(output)
 
-    # def user data of specified place
+    # def user data of specified place - tested OK
     @staticmethod
     def place_specific_user_get(place_id):
         """ returns host user data of specified place """
+        data = []
         result = ""
-# 
-        # user_data = storage.get("User")
+
+        user_data = storage.get("User")
         place_data = storage.get("Place")
 
         if USE_DB_STORAGE:
@@ -493,10 +494,12 @@ class Place(Base):
         else:
             for k, v in place_data.items():
                 if v['id'] == place_id:
-                    wanted_place_id = v['id']
+                    #wanted_place_id = v['id']
+                    wanted_host_id = v['host_id']
 
             for k, v in user_data.items():
-                if v['place_id'] == wanted_place_id:
+                # if v['place_id'] == wanted_place_id:
+                if v['id'] == wanted_host_id:
                     data.append({
                         "id": v["id"],
                         "first_name": v["first_name"],
@@ -508,13 +511,15 @@ class Place(Base):
 
         return jsonify(data)
 
-    # def city data of specified place
+    # def city data of specified place - tested OK
     @staticmethod
     def place_specific_city_get(place_id):
         """ returns city data of specified place """
+        data = []
         result = ""
-# 
-        # user_data = storage.get("User")
+        wanted_city_id = ""
+
+        city_data = storage.get("City")
         place_data = storage.get("Place")
 
         if USE_DB_STORAGE:
@@ -532,10 +537,11 @@ class Place(Base):
         else:
             for k, v in place_data.items():
                 if v['id'] == place_id:
-                    wanted_place_id = v['id']
+                    # wanted_place_id = v['id']
+                    wanted_city_id = v['city_id']
 
             for k, v in city_data.items():
-                if v['place_id'] == wanted_place_id:
+                if v['id'] == wanted_city_id:
                     data.append({
                         "id": v['id'],
                         "name": v['name'],
@@ -547,39 +553,86 @@ class Place(Base):
         return jsonify(data)
 
 
-    # def review list of specified place
+    # def list of reviews of specified place - NEED TO ADD DATA
     @staticmethod
     def place_specific_reviews_get(place_id):
-        # """ returns list of reviews of specified place """
-        # data = []
-        # place_reviews = {}
-        # # wanted_user_id = ""
-# 
-        # user_data = storage.get("User")
-        # place_data = storage.get("Place")
-# 
-        # if USE_DB_STORAGE:
-# 
-        #     for row in user_data:
-        #         if row.id == user_id:
-        #             # wanted_user_id = row.id
-        #             specific_user = storage.get("User", user_id)      
-        #       # Note the use of the place relationship
-        #     for item in specific_user.properties:
-        #         data.append(item.name)
-# 
-        #     user_key = f"{specific_user.first_name} {specific_user.last_name}-Host"
-        #     user_places[user_key] = data
-# 
-        #     return user_places
-# 
+        """ returns list of reviews of specified place """
+
+        data = []
+        place_reviews = {}
+        # wanted_review_id = ""
+
+        review_data = storage.get("User")
+        place_data = storage.get("Place")
+
+        if USE_DB_STORAGE:
+
+            for row in place_data:
+                if row.id == place_id:
+                    # wanted_user_id = row.id
+                    specific_place = storage.get("User", place_id)   
+            # Note the use of the place relationship
+            for item in specific_place.reviews:
+                data.append(item.name)
+
+            # place_key = f"{specific_place.first_name} {specific_review.last_name}-Host"
+            place_reviews[specific_place.name] = data
+
+            return place_reviews
+
+
+        else:
+            for k, v in place_data.items():
+                if v['id'] == place_id:
+                    wanted_place_id = v['id']
+
+            for k, v in review_data.items():
+                if v['place_id'] == wanted_place_id:
+                    data.append({
+                        "id": v['id'],
+                        "feedback": v['feedback'],
+                        "commentor_user_id": v['commentor_user_id'],
+                        "place_id": v['place_id'],
+                        "rating": v['rating'],
+                        "created_at": datetime.fromtimestamp(v['created_at']),
+                        "updated_at": datetime.fromtimestamp(v['updated_at'])
+                 })
+
+        return jsonify(data)
+
+
+    #def list of amenities of specified place - tested OK
+    @staticmethod
+    def places_amenities_get(place_id):
+        """ Class method to provide
+        list of amenities of specified place """
+   
+        place_amenities = {}
+        amenities_list = []
+
+        place_data = storage.get("Place")
+
+        if USE_DB_STORAGE:
+
+            for row in place_data:
+                if row.id == place_id:
+                    specific_place = storage.get("Place", place_id)
+
+        # Note the use of the amenities relationship
+            for item in specific_place.amenities:
+                amenities_list.append(item.name)
+
+            place_amenities[specific_place.name] = amenities_list
+
+            return place_amenities
+
         # else:
-        #     for k, v in user_data.items():
-        #         if v['id'] == user_id:
+        #     for k, v in place_data.items():
+        #         if v['id'] == place_id:
         #             wanted_user_id = v['id']
 # 
-        #     for k, v in place_data.items():
-        #         if v['host_id'] == wanted_user_id:
+        #     for k, v in amenity_data.items():
+        #         if v['id'] == wanted_user_id:
         #             data.append({
         #                 "id": v['id'],
         #                 "host_user_id": v['host_id'],
@@ -598,7 +651,7 @@ class Place(Base):
         #             })
 # 
         # return jsonify(data)
-# 
+
 
 class Amenity(Base):
     """Representation of amenity """
