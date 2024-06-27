@@ -844,7 +844,7 @@ class Amenity(Base):
         return jsonify(output)
 
 
-    # def list of places that contain the specified amenity
+    # def list of places that contain the specified amenity - tested OK
     @staticmethod
     def amenities_places_get(amenity_id):
         """ Class method that defines
