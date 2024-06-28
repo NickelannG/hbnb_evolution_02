@@ -235,7 +235,7 @@ class Place(Base):
                 # use print(row.__dict__) to see the contents of the sqlalchemy model objects
                 data.append({
                     "id": place_data.id,
-                    "host_user_id": place_data.host_id,
+                    "host_id": place_data.host_id,
                     "city_id": place_data.city_id,
                     "name": place_data.name,
                     "description": place_data.description,
@@ -243,7 +243,8 @@ class Place(Base):
                     "latitude": place_data.latitude,
                     "longitude": place_data.longitude,
                     "number_of_rooms": place_data.number_of_rooms,
-                    "bathrooms": place_data.number_of_bathrooms,
+                    "numer_of_bathrooms": place_data.number_of_bathrooms,
+                    "max_guest": place_data.number_of_bathrooms,
                     "price_per_night": place_data.price_per_night,
                     "created_at": row.created_at.strftime(Place.datetime_format),
                     "updated_at": row.updated_at.strftime(Place.datetime_format)
@@ -253,7 +254,7 @@ class Place(Base):
             for k, v in place_data.items():
                 data.append({
                      "id": v['id'],
-                     "host_user_id": v['host_id'],
+                     "host_id": v['host_id'],
                      "city_id": v['city_id'],
                      "name": v['name'],
                      "description": v['description'],
@@ -261,7 +262,7 @@ class Place(Base):
                      "latitude": v['latitude'],
                      "longitude": v['longitude'],
                      "number_of_rooms": v['number_of_rooms'],
-                     "bathrooms": v['number_of_bathrooms'],
+                     "numer_of_bathrooms": v['number_of_bathrooms'],
                      "price_per_night": v['price_per_night'],
                      "max_guests": v['max_guests'],
                     "created_at": datetime.fromtimestamp(v['created_at']),
@@ -286,7 +287,7 @@ class Place(Base):
             # DBStorage
             data.append({
                 "id": place_data.id,
-                "host_user_id": place_data.host_id,
+                "host_id": place_data.host_id,
                 "city_id": place_data.city_id,
                 "name": place_data.name,
                 "description": place_data.description,
@@ -294,7 +295,7 @@ class Place(Base):
                 "latitude": place_data.latitude,
                 "longitude": place_data.longitude,
                 "number_of_rooms": place_data.number_of_rooms,
-                "bathrooms": place_data.number_of_bathrooms,
+                "number_of_bathrooms": place_data.number_of_bathrooms,
                 "price_per_night": place_data.price_per_night,
                 "created_at": place_data.created_at.strftime(Place.datetime_format),
                 "updated_at": place_data.updated_at.strftime(Place.datetime_format)
@@ -303,7 +304,7 @@ class Place(Base):
             # FileStorage
             data.append({
                 "id": place_data['id'],
-                "host_user_id": place_data['host_id'],
+                "host_id": place_data['host_id'],
                 "city_id": place_data['city_id'],
                 "name": place_data['name'],
                 "description": place_data['description'],
@@ -311,7 +312,7 @@ class Place(Base):
                 "latitude": place_data['latitude'],
                 "longitude": place_data['longitude'],
                 "number_of_rooms": place_data['number_of_rooms'],
-                "bathrooms": place_data['number_of_bathrooms'],
+                "number_of_bathrooms": place_data['number_of_bathrooms'],
                 "price_per_night": place_data['price_per_night'],
                 "max_guests": place_data['max_guests'],
                 "created_at": datetime.fromtimestamp(place_data['created_at']),
@@ -320,6 +321,7 @@ class Place(Base):
         return jsonify(data)
 
     # def create()
+    # Tested - OK
     @staticmethod
     def create():
         """ Class method that creates a new place"""
@@ -337,7 +339,7 @@ class Place(Base):
             abort(400, "Missing longitude")
         if 'number_of_rooms' not in data:
             abort(400, "Missing number of rooms")
-        if 'bathrooms' not in data:
+        if 'number_of_bathrooms' not in data:
             abort(400, "Missing number of bathrooms")
         if 'price_per_night' not in data:
             abort(400, "Missing pricing per night")
@@ -345,10 +347,18 @@ class Place(Base):
             abort(400, "Missing max number of guests")
         if 'name' not in data:
             abort(400, "Missing name of place")
-        if 'host_user_id' not in data:
+        if 'host_id' not in data:
             abort(400, "Missing host ID")
         if 'city_id' not in data:
             abort(400, "Missing city ID")
+        
+        # access all keys and values within Amenity
+        place_data = storage.get("Place")
+            # Check all rows in amenity data
+        for row in place_data:
+            # Check if "name" is the same as ""
+            if row.name == data['name']:
+                abort(409, "Place with name '{}' already exists".format(data['name']))
 
         try:
             new_place = Place(
@@ -357,11 +367,11 @@ class Place(Base):
                 latitude=data["latitude"],
                 longitude=data["longitude"],
                 number_of_rooms=data["number_of_rooms"],
-                bathrooms=data["number_of_bathrooms"],
+                number_of_bathrooms=data["number_of_bathrooms"],
                 price_per_night=data["price_per_night"],
                 max_guests=data["max_guests"],
                 name=data["name"],
-                host_user_id=data["host_id"],
+                host_id=data["host_id"],
                 city_id=data["city_id"],
                 )
         except ValueError as exc:
@@ -371,7 +381,7 @@ class Place(Base):
 
         output = {
             "id": new_place.id,
-            "host_user_id": new_place.host_id,
+            "host_id": new_place.host_id,
             "city_id": new_place.city_id,
             "name": new_place.name,
             "description": new_place.description,
@@ -379,7 +389,7 @@ class Place(Base):
             "latitude": new_place.latitude,
             "longitude": new_place.longitude,
             "number_of_rooms": new_place.number_of_rooms,
-            "bathrooms": new_place.number_of_bathrooms,
+            "number_of_bathrooms": new_place.number_of_bathrooms,
             "price_per_night": new_place.price_per_night,
             "max_guests": new_place.max_guests,
             "created_at": new_place.created_at,
@@ -434,7 +444,7 @@ class Place(Base):
         if USE_DB_STORAGE:
             output = {
                 "id": result.id,
-                "host_user_id": result.host_id,
+                "host_id": result.host_id,
                 "city_id": result.city_id,
                 "name": result.name,
                 "description": result.description,
@@ -442,7 +452,7 @@ class Place(Base):
                 "latitude": result.latitude,
                 "longitude": result.longitude,
                 "number_of_rooms": result.number_of_rooms,
-                "bathrooms": result.number_of_bathrooms,
+                "number_of_bathrooms": result.number_of_bathrooms,
                 "price_per_night": result.price_per_night,
                 "max_guests": result.max_guests,
                 "created_at": result.created_at.strftime(Place.datetime_format),
