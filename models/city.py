@@ -164,6 +164,14 @@ class City(Base):
         if 'country_id' not in data:
             abort(400, "Missing country_id") 
 
+        # access all keys and values within City
+        city_data = storage.get("City")
+            # Check all rows in city data
+        for row in city_data:
+            # Check if "name" is the same as ""
+            if row.name == data['name']:
+                abort(409, "'{}' already exists".format(data['name']))
+
         try:
             new_city = City(
                 name=data["name"],

@@ -169,6 +169,13 @@ class Country(Base):
         if 'code' not in data:
             abort(400, "Missing country code")
 
+        # access all keys and values within Country
+        country_data = storage.get("Country")
+            # Check all rows in country data
+        for row in country_data:
+            # Check if "name" is the same as ""
+            if row.name == data['name']:
+                abort(409, "Country with name '{}' already exists".format(data['name']))
         try:
             new_country = Country(
                 name=data["name"],

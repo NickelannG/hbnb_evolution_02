@@ -206,6 +206,14 @@ class User(Base):
         if 'password' not in data:
             abort(400, "Missing password")
 
+    # access all keys and values within User
+        user_data = storage.get("User")
+            # Check all rows in user data
+        for row in user_data:
+            # Check if "email" is the same as existing user
+            if row.email == data['email']:
+                abort(409, "User with email '{}' already exists".format(data['email']))
+
         try:
             new_user = User(
                 first_name=data["first_name"],
